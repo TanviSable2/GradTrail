@@ -1,0 +1,102 @@
+const fetch = require('node-fetch');
+const { upsertJobs } = require('../upsertJobs');
+const stripHtml = require('../../../utils/stripHtml');
+const { deriveBranches, deriveDomain, deriveSkills } = require('../../../utils/branchMapper');
+
+const COMPANY_SEARCHES = [
+  { name: 'TCS',           slug: 'tcs'          },
+  { name: 'Infosys',       slug: 'infosys'      },
+  { name: 'Wipro',         slug: 'wipro'        },
+  { name: 'Accenture',     slug: 'accenture'    },
+  { name: 'HCL',           slug: 'hcl'          },
+  { name: 'Tech Mahindra', slug: 'tech-mahindra'},
+  { name: 'Cognizant',     slug: 'cognizant'    },
+  { name: 'Capgemini',     slug: 'capgemini'    },
+  { name: 'IBM',           slug: 'ibm-india'    },
+  { name: 'Samsung',       slug: 'samsung-india'},
+];
+
+const normalizeCompanyJob = (job, companyName) => {
+  const title = job.title || '';
+  const description = stripHtml(job.snippet || '');
+
+  const isInternship =
+    title.toLowerCase().includes('intern') ||
+    title.toLowerCase().includes('trainee') ||
+    title.toLowerCase().includes('fresher');
+
+  return {
+    external_id: 'cj-' + String(job.id),
+    title: title,
+    company: companyName,
+    role: title,
+    job_type: isInternship ? 'internship' : 'job',
+    employment_type: 'any',
+    description: description,
+    branch_hint: deriveBranches(title, description),
+    skills_hint: deriveSkills(title, description),
+    domain: deriveDomain(title, description),
+    location: job.location || 'India',
+    is_remote: (job.location || '').toLowerCase().includes('remote'),
+    country: 'India',
+    salary_min: null,
+    salary_max: null,
+    salary_period: 'yearly',
+    apply_url: job.link || '',
+    posted_at: job.updated ? new Date(job.updated) : new Date(),
+    deadline: null,
+  };
+};
+
+const syncCompanyJobs = async () => {
+  const apiKey = process.env.JOOBLE_API_KEY;
+  if (!apiKey) {
+    console.log('[sync:companyjobs] Skipping — no JOOBLE_API_KEY');
+    return;
+  }
+
+  console.log('[sync:companyjobs] Fetching jobs for ' + COMPANY_SEARCHES.length + ' companies...');
+  let total = 0;
+
+  for (const company of COMPANY_SEARCHES) {
+    try {
+      const response = await fetch('https://jooble.org/api/' + apiKey, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          keywords: company.name,
+          location: 'India',
+          ResultOnPage: 10,
+          page: 1,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error('[sync:companyjobs] HTTP ' + response.status + ' for ' + company.name);
+        continue;
+      }
+
+      const data = await response.json();
+      const rawJobs = (data.jobs || []).filter((j) => j.id && j.link);
+
+      if (rawJobs.length === 0) {
+        console.log('[sync:companyjobs] No results for: ' + company.name);
+        continue;
+      }
+
+      const normalized = rawJobs.map((j) => normalizeCompanyJob(j, company.name));
+      await upsertJobs('jooble', normalized);
+      total += normalized.length;
+
+      console.log('[sync:companyjobs] ' + company.name + ': ' + normalized.length + ' jobs');
+
+      await new Promise((res) => setTimeout(res, 600));
+    } catch (err) {
+      console.error('[sync:companyjobs] Failed for ' + company.name + ':', err.message);
+    }
+  }
+
+  console.log('[sync:companyjobs] Done. Total: ' + total);
+};
+
+module.exports = { syncCompanyJobs };
