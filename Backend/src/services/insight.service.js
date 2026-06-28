@@ -34,9 +34,9 @@ const getInsights = async (userId) => {
   ] = await Promise.all([
     getApplicationStats(userId),
     getTopDomains(userId),
-    getTopSkillsInMarket(userId),
+    getTopSkillsInMarket(),
     getSkillGap(userId),
-    getTopCompanies(userId),
+    getTopCompanies(),
     getExpiringSoon(userId),
     getProfileCompleteness(userId),
   ]);

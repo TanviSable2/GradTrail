@@ -15,7 +15,6 @@ import Applications from './pages/Applications'
 import Reminders from './pages/Reminders'
 import Insights from './pages/Insights'
 import Profile from './pages/Profile'
-import CompanyFeed from './pages/CompanyFeed'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -53,18 +52,17 @@ export default function App() {
           />
           <Routes>
             <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+            <Route path="/login"  element={<PublicRoute><Login /></PublicRoute>} />
             <Route path="/signup" element={<PublicRoute><Signup /></PublicRoute>} />
             <Route path="/" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="jobs" element={<Jobs />} />
-              <Route path="internships" element={<Internships />} />
-              <Route path="courses" element={<Courses />} />
+              <Route path="dashboard"    element={<Dashboard />} />
+              <Route path="jobs"         element={<Jobs />} />
+              <Route path="internships"  element={<Internships />} />
+              <Route path="courses"      element={<Courses />} />
               <Route path="applications" element={<Applications />} />
-              <Route path="reminders" element={<Reminders />} />
-              <Route path="insights" element={<Insights />} />
-              <Route path="profile" element={<Profile />} />
-              <Route path="companies" element={<CompanyFeed />} />
+              <Route path="reminders"    element={<Reminders />} />
+              <Route path="insights"     element={<Insights />} />
+              <Route path="profile"      element={<Profile />} />
             </Route>
           </Routes>
         </BrowserRouter>

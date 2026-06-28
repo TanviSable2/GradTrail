@@ -3,7 +3,8 @@ const { getJobById } = require('../db/queries/job.queries');
 
 const listApplications = async (user_id) => {
   const result = await getApplicationsByUser(user_id);
-  return { count: result.rowCount, applications: result.rows };
+  // Return flat array — frontend handles it
+  return result.rows;
 };
 
 const applyToJob = async (user_id, fields) => {
@@ -13,8 +14,18 @@ const applyToJob = async (user_id, fields) => {
     err.status = 404;
     throw err;
   }
-  const result = await createApplication(user_id, fields);
-  return result.rows[0];
+  try {
+    const result = await createApplication(user_id, fields);
+    return result.rows[0];
+  } catch (err) {
+    if (err.code === '23505') {
+      // Unique violation — already saved
+      const conflict = new Error('Already saved.');
+      conflict.status = 409;
+      throw conflict;
+    }
+    throw err;
+  }
 };
 
 const editApplication = async (id, user_id, fields) => {

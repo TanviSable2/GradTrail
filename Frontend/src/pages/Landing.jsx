@@ -1,95 +1,72 @@
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { Zap, ArrowRight, Briefcase, BarChart2, Bell, BookOpen, Sun, Moon } from 'lucide-react'
-import { useTheme } from '../context/ThemeContext'
 
-const features = [
-  { icon: Briefcase, title: 'Smart Job Matching', desc: 'AI-powered matching based on your branch and skills profile.' },
-  { icon: BarChart2, title: 'Career Insights', desc: 'Track skill gaps, market demand and application analytics.' },
-  { icon: Bell, title: 'Reminder System', desc: 'Never miss deadlines, interviews or closing applications.' },
-  { icon: BookOpen, title: 'Courses & Certifications', desc: 'Discover courses that fill your skill gaps and boost your profile.' },
-]
-const stats = [{ value: '283+', label: 'Live Listings' }, { value: '18', label: 'Companies' }, { value: '5', label: 'Job Sources' }, { value: '100%', label: 'Free Platform' }]
-
-const card = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: 24, backdropFilter: 'blur(12px)' }
+// Custom SVG logo — graduation cap with a trail line
+function GradTrailLogo({ size = 30 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+      <polygon points="16,5 30,12 16,19 2,12" fill="#3b82f6" />
+      <path d="M24 15.5 L24 22 Q16 26 8 22 L8 15.5" stroke="#60a5fa" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <circle cx="30" cy="12" r="1.4" fill="#fbbf24" />
+      <line x1="30" y1="13.4" x2="30" y2="19" stroke="#fbbf24" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  )
+}
 
 export default function Landing() {
-  const { dark, toggle } = useTheme()
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0a', color: 'white', fontFamily: 'Sora, sans-serif', overflowX: 'hidden' }}>
-      <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none' }}>
-        <div style={{ position: 'absolute', top: -80, left: '50%', transform: 'translateX(-50%)', width: 600, height: 400, background: 'radial-gradient(ellipse, rgba(59,130,246,0.12), transparent 70%)', filter: 'blur(1px)' }} />
-        <div style={{ position: 'absolute', bottom: 0, right: 0, width: 500, height: 350, background: 'radial-gradient(ellipse, rgba(139,92,246,0.08), transparent 70%)' }} />
-      </div>
+    <div style={{ minHeight: '100vh', background: '#0a0a0a', color: 'white', fontFamily: 'Sora, sans-serif', display: 'flex', flexDirection: 'column' }}>
 
-      <nav style={{ position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 40px', maxWidth: 1200, margin: '0 auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 36, height: 36, background: '#3b82f6', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Zap size={17} color="white" /></div>
-          <span style={{ fontSize: 20, fontWeight: 700 }}>GradTrail</span>
+      {/* Nav */}
+      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 40px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+          <GradTrailLogo size={28} />
+          <span style={{ fontSize: 18, fontWeight: 700 }}>GradTrail</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <button onClick={toggle} style={{ background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', padding: 8, borderRadius: 8, display: 'flex' }}>{dark ? <Sun size={17} /> : <Moon size={17} />}</button>
-          <Link to="/login" style={{ padding: '8px 18px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.12)', color: '#d1d5db', textDecoration: 'none', fontSize: 14 }}>Login</Link>
-          <Link to="/signup" style={{ padding: '8px 18px', borderRadius: 10, background: '#3b82f6', color: 'white', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Get Started</Link>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <Link to="/login" style={{ padding: '8px 20px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', color: '#d1d5db', textDecoration: 'none', fontSize: 14 }}>
+            Login
+          </Link>
+          <Link to="/signup" style={{ padding: '8px 20px', borderRadius: 8, background: '#3b82f6', color: 'white', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>
+            Sign Up
+          </Link>
         </div>
       </nav>
 
-      <section style={{ position: 'relative', zIndex: 10, textAlign: 'center', padding: '60px 24px 40px', maxWidth: 900, margin: '0 auto' }}>
-        <motion.div initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55 }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 99, border: '1px solid rgba(59,130,246,0.25)', background: 'rgba(59,130,246,0.08)', color: '#60a5fa', fontSize: 12, fontWeight: 500, marginBottom: 22 }}>
-            <Zap size={12} /> Built for engineering students
-          </div>
-          <h1 style={{ fontSize: 62, fontWeight: 800, lineHeight: 1.1, marginBottom: 18, letterSpacing: '-0.02em' }}>
-            Your Career,<br />
-            <span style={{ background: 'linear-gradient(135deg, #60a5fa, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Accelerated</span>
-          </h1>
-          <p style={{ fontSize: 17, color: '#9ca3af', maxWidth: 560, margin: '0 auto 28px', lineHeight: 1.7 }}>
-            Discover jobs, internships and courses personalized to your skills with AI-powered recommendations and reminders.
-          </p>
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link to="/signup" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '12px 24px', borderRadius: 14, background: '#3b82f6', color: 'white', textDecoration: 'none', fontWeight: 500, fontSize: 15 }}>Start Free <ArrowRight size={16} /></Link>
-            <Link to="/login" style={{ display: 'inline-flex', alignItems: 'center', padding: '12px 24px', borderRadius: 14, border: '1px solid rgba(255,255,255,0.12)', color: '#d1d5db', textDecoration: 'none', fontSize: 15 }}>Sign In</Link>
-          </div>
-        </motion.div>
+      {/* Hero */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '60px 24px' }}>
+        <h1 style={{ fontSize: 48, fontWeight: 800, lineHeight: 1.15, marginBottom: 20, maxWidth: 700 }}>
+          Jobs, Internships & Courses —{' '}
+          <span style={{ color: '#3b82f6' }}>all in one place</span>
+        </h1>
+        <p style={{ fontSize: 16, color: '#6b7280', maxWidth: 520, lineHeight: 1.7, marginBottom: 36 }}>
+          GradTrail aggregates opportunities from across the web so engineering students never miss a deadline. Set reminders, tailor your resume, and track applications.
+        </p>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+          <Link to="/signup" style={{ padding: '13px 30px', borderRadius: 10, background: '#3b82f6', color: 'white', textDecoration: 'none', fontWeight: 600, fontSize: 15 }}>
+            Get Started — Free
+          </Link>
+          <Link to="/login" style={{ padding: '13px 30px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.15)', color: '#d1d5db', textDecoration: 'none', fontSize: 15 }}>
+            Sign In
+          </Link>
+        </div>
 
-        <motion.div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginTop: 56 }} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-          {stats.map(({ value, label }) => (
-            <div key={label} style={{ ...card, padding: '20px 16px', textAlign: 'center' }}>
-              <p style={{ fontSize: 34, fontWeight: 800, color: '#60a5fa', marginBottom: 4 }}>{value}</p>
-              <p style={{ fontSize: 12, color: '#6b7280' }}>{label}</p>
+        {/* Simple stats */}
+        <div style={{ display: 'flex', gap: 40, marginTop: 60, flexWrap: 'wrap', justifyContent: 'center' }}>
+          {[['Jobs & Internships', 'Aggregated daily'], ['Email Reminders', 'Before deadlines'], ['AI Resume Tailor', 'Per job description'], ['Free to Use', 'Always']].map(([title, sub]) => (
+            <div key={title} style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: 15, fontWeight: 600, color: 'white', marginBottom: 4 }}>{title}</p>
+              <p style={{ fontSize: 12, color: '#6b7280' }}>{sub}</p>
             </div>
           ))}
-        </motion.div>
-      </section>
-
-      <section style={{ position: 'relative', zIndex: 10, maxWidth: 1100, margin: '0 auto', padding: '40px 24px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 44 }}>
-          <h2 style={{ fontSize: 36, fontWeight: 700, marginBottom: 10 }}>Everything You Need</h2>
-          <p style={{ color: '#6b7280' }}>One platform for your complete career journey.</p>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: 18 }}>
-          {features.map(({ icon: Icon, title, desc }, i) => (
-            <motion.div key={title} style={card} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }} whileHover={{ y: -4 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
-                <Icon size={20} color="#60a5fa" />
-              </div>
-              <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>{title}</h3>
-              <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.7 }}>{desc}</p>
-            </motion.div>
-          ))}
+      </div>
+
+      <footer style={{ padding: '20px 40px', borderTop: '1px solid rgba(255,255,255,0.07)', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          <GradTrailLogo size={18} />
+          <span style={{ fontSize: 12, fontWeight: 600, color: '#9ca3af' }}>GradTrail</span>
         </div>
-      </section>
-
-      <section style={{ position: 'relative', zIndex: 10, maxWidth: 700, margin: '0 auto', padding: '20px 24px 60px' }}>
-        <motion.div style={{ ...card, padding: 48, textAlign: 'center' }} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-          <h2 style={{ fontSize: 32, fontWeight: 700, marginBottom: 12 }}>Ready to level up your career?</h2>
-          <p style={{ color: '#6b7280', marginBottom: 24 }}>Join GradTrail and discover opportunities tailored for you.</p>
-          <Link to="/signup" style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '12px 24px', borderRadius: 14, background: '#3b82f6', color: 'white', textDecoration: 'none', fontWeight: 500 }}>Create Free Account <ArrowRight size={16} /></Link>
-        </motion.div>
-      </section>
-
-      <footer style={{ position: 'relative', zIndex: 10, borderTop: '1px solid rgba(255,255,255,0.08)', padding: '24px', textAlign: 'center', fontSize: 13, color: '#4b5563' }}>
-        © {new Date().getFullYear()} GradTrail. All rights reserved.
+        <p style={{ fontSize: 12, color: '#374151' }}>© {new Date().getFullYear()} GradTrail · Built with React, Node.js, PostgreSQL</p>
       </footer>
     </div>
   )

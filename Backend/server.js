@@ -7,10 +7,10 @@ const apiRoutes    = require('./src/index');
 const errorHandler = require('./src/middleware/errorHandler');
 const protect      = require('./src/middleware/auth');
 const adminOnly    = require('./src/middleware/adminOnly');
-const { generalLimiter, authLimiter, syncLimiter } = require('./src/middleware/rateLimiter');
+const { generalLimiter, syncLimiter } = require('./src/middleware/rateLimiter');
 
 const { runAllSyncs, runCoursesSeed, getSyncStatus } = require('./src/services/sync/syncRunner');
-const { runAllReminders, runCourseReminders }        = require('./src/services/reminder.service');
+const { runAllReminders } = require('./src/services/reminder.service'); // ← removed runCourseReminders, it doesn't exist
 
 const app = express();
 
@@ -60,15 +60,9 @@ app.listen(PORT, async () => {
 
   // Reminder cron — every day at 8am
   cron.schedule('0 8 * * *', () => {
-    console.log('[cron] Daily reminders...');
+    console.log('[cron] Daily reminders running...');
     runAllReminders().catch(console.error);
   });
 
-  // Course reminder cron — every Monday at 9am
-  cron.schedule('0 9 * * 1', () => {
-    console.log('[cron] Weekly course reminders...');
-    runCourseReminders().catch(console.error);
-  });
-
-  console.log('[cron] All schedules active');
+  console.log('[cron] All schedules active — daily reminders @ 8AM, weekly sync @ Sun 2AM');
 });

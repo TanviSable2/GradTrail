@@ -6,7 +6,7 @@ const VALID_STATUSES = ['not_applied', 'applied', 'interview', 'rejected', 'offe
 const getApplications = async (req, res, next) => {
   try {
     const data = await appService.listApplications(req.user.id);
-    res.json(data);
+    res.json(data); // flat array
   } catch (err) {
     next(err);
   }
@@ -19,12 +19,13 @@ const createApplication = async (req, res, next) => {
 
     const status = req.body.status || 'not_applied';
     if (!VALID_STATUSES.includes(status)) {
-      return res.status(400).json({ error: 'status must be one of: ' + VALID_STATUSES.join(', ') });
+      return res.status(400).json({ error: 'Invalid status' });
     }
 
     const application = await appService.applyToJob(req.user.id, req.body);
     res.status(201).json(application);
   } catch (err) {
+    if (err.status === 409) return res.status(409).json({ error: 'Already saved.' });
     next(err);
   }
 };
@@ -33,9 +34,8 @@ const updateApplication = async (req, res, next) => {
   try {
     const { status } = req.body;
     if (status && !VALID_STATUSES.includes(status)) {
-      return res.status(400).json({ error: 'status must be one of: ' + VALID_STATUSES.join(', ') });
+      return res.status(400).json({ error: 'Invalid status' });
     }
-
     const application = await appService.editApplication(req.params.id, req.user.id, req.body);
     res.json(application);
   } catch (err) {

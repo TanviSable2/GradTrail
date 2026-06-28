@@ -46,9 +46,16 @@ const syncHimalayas = async () => {
 
   for (const term of SEARCH_TERMS) {
     try {
+      // Correct endpoint: /jobs/api/search (not /api/jobs)
+      // Max limit reduced to 20 per Himalayas API update
       const response = await fetch(
-        'https://himalayas.app/api/jobs?q=' + term + '&limit=20',
-        { headers: { 'User-Agent': 'NextStep Job Aggregator (student project)' } }
+        'https://himalayas.app/jobs/api/search?keyword=' + encodeURIComponent(term) + '&limit=20',
+        {
+          headers: {
+            'User-Agent': 'GradTrail/1.0 (student project job aggregator)',
+            'Accept': 'application/json',
+          }
+        }
       );
 
       if (!response.ok) {
@@ -57,15 +64,20 @@ const syncHimalayas = async () => {
       }
 
       const data = await response.json();
-      const rawJobs = data.jobs || [];
-      if (rawJobs.length === 0) continue;
+      const rawJobs = data.jobs || data.data || [];
+      if (rawJobs.length === 0) {
+        console.log('[sync:himalayas] No results for: ' + term);
+        continue;
+      }
 
       const validJobs = rawJobs.filter((j) => j.id && j.title);
       const normalized = validJobs.map(normalizeHimalayasJob);
       await upsertJobs('himalayas', normalized);
       total += normalized.length;
 
-      await new Promise((res) => setTimeout(res, 300));
+      console.log('[sync:himalayas] "' + term + '" → ' + normalized.length + ' jobs');
+
+      await new Promise((res) => setTimeout(res, 400));
     } catch (err) {
       console.error('[sync:himalayas] Failed for ' + term + ':', err.message);
     }

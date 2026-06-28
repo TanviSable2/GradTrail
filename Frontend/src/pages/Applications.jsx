@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
 import { ClipboardList, ChevronDown, ExternalLink, Bell } from 'lucide-react'
 import { applicationsApi } from '../services/api'
 import Badge from '../components/ui/Badge'
@@ -24,15 +23,10 @@ export default function Applications() {
     applicationsApi.list()
       .then((r) => {
         const data = r.data
-        if (Array.isArray(data)) {
-          setApps(data)
-        } else if (data && Array.isArray(data.data)) {
-          setApps(data.data)
-        } else if (data && Array.isArray(data.applications)) {
-          setApps(data.applications)
-        } else {
-          setApps([])
-        }
+        if (Array.isArray(data)) setApps(data)
+        else if (Array.isArray(data?.data)) setApps(data.data)
+        else if (Array.isArray(data?.applications)) setApps(data.applications)
+        else setApps([])
       })
       .catch(() => { toast.error('Failed to load'); setApps([]) })
       .finally(() => setLoading(false))
@@ -54,158 +48,124 @@ export default function Applications() {
     } catch { toast.error('Failed') }
   }
 
-  const safeApps = Array.isArray(apps) ? apps : []
-
-  const counts = safeApps.reduce((acc, a) => {
+  const counts = apps.reduce((acc, a) => {
     acc[a.status] = (acc[a.status] || 0) + 1
     return acc
   }, {})
 
-  const filtered = activeTab === 'all' ? safeApps : safeApps.filter((a) => a.status === activeTab)
+  const filtered = activeTab === 'all' ? apps : apps.filter((a) => a.status === activeTab)
 
   const tabStyle = (active) => ({
-    padding: '7px 14px', borderRadius: 10, border: 'none',
-    fontSize: 12, fontWeight: 500, cursor: 'pointer',
-    background: active ? '#3b82f6' : 'rgba(255,255,255,0.05)',
+    padding: '7px 14px', borderRadius: 9, border: 'none', fontSize: 12, fontWeight: 500,
+    cursor: 'pointer', background: active ? '#3b82f6' : 'rgba(255,255,255,0.05)',
     color: active ? 'white' : '#9ca3af', flexShrink: 0,
-    transition: 'all 0.15s',
   })
 
   const inp = {
     width: '100%', background: '#0a0a0a',
-    border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10,
-    padding: '10px 14px', fontSize: 13, color: 'white',
+    border: '1px solid rgba(255,255,255,0.08)', borderRadius: 9,
+    padding: '9px 12px', fontSize: 13, color: 'white',
     outline: 'none', resize: 'none', fontFamily: 'Sora, sans-serif',
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div>
-        <h1 style={{ fontSize: 26, fontWeight: 700, color: 'white' }}>Applications</h1>
-        <p style={{ fontSize: 13, color: '#6b7280', marginTop: 4 }}>Track your job application pipeline</p>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: 'white' }}>Applications</h1>
+        <p style={{ fontSize: 13, color: '#6b7280', marginTop: 3 }}>Track your job application pipeline</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 12 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(110px,1fr))', gap: 10 }}>
         {Object.entries(statusConfig).map(([key, { label, color }]) => (
-          <div
-            key={key} className="glass-card"
-            style={{ padding: '14px 16px', textAlign: 'center', cursor: 'pointer' }}
-            onClick={() => setActiveTab(key === activeTab ? 'all' : key)}
-          >
-            <p style={{ fontSize: 22, fontWeight: 700, color: 'white' }}>{counts[key] || 0}</p>
-            <div style={{ marginTop: 6 }}><Badge variant={color}>{label}</Badge></div>
+          <div key={key} className="glass-card" style={{ padding: '12px 14px', textAlign: 'center', cursor: 'pointer' }}
+            onClick={() => setActiveTab(key === activeTab ? 'all' : key)}>
+            <p style={{ fontSize: 20, fontWeight: 700, color: 'white' }}>{counts[key] || 0}</p>
+            <div style={{ marginTop: 5 }}><Badge variant={color}>{label}</Badge></div>
           </div>
         ))}
       </div>
 
-      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
-        <button style={tabStyle(activeTab === 'all')} onClick={() => setActiveTab('all')}>
-          All ({safeApps.length})
-        </button>
+      <div style={{ display: 'flex', gap: 7, overflowX: 'auto', paddingBottom: 4 }}>
+        <button style={tabStyle(activeTab === 'all')} onClick={() => setActiveTab('all')}>All ({apps.length})</button>
         {Object.entries(statusConfig).map(([key, { label }]) => (
           <button key={key} style={tabStyle(activeTab === key)} onClick={() => setActiveTab(key)}>
-            {label} {counts[key] ? `(${counts[key]})` : '(0)'}
+            {label} ({counts[key] || 0})
           </button>
         ))}
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {loading
           ? Array(4).fill(0).map((_, i) => <CardSkeleton key={i} />)
-          : filtered.map((app, i) => (
-            <motion.div
-              key={app.id} className="glass-card"
-              style={{ overflow: 'hidden' }}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
-            >
-              <div
-                style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 18px', cursor: 'pointer' }}
-                onClick={() => setExpandedId(expandedId === app.id ? null : app.id)}
-              >
-                <div style={{ width: 40, height: 40, background: 'rgba(59,130,246,0.15)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#60a5fa', flexShrink: 0 }}>
-                  {app.job?.company?.slice(0, 2)?.toUpperCase() || 'JB'}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {app.job?.title || 'Job'}
-                  </p>
-                  <p style={{ fontSize: 12, color: '#6b7280' }}>{app.job?.company}</p>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-                  <Badge variant={statusConfig[app.status]?.color || 'default'}>
-                    {statusConfig[app.status]?.label || app.status}
-                  </Badge>
-                  {app.remind_me && <Bell size={14} color="#fbbf24" />}
-                  <ChevronDown
-                    size={15} color="#6b7280"
-                    style={{ transform: expandedId === app.id ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}
-                  />
-                </div>
-              </div>
-
-              {expandedId === app.id && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '16px 18px' }}
-                >
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
-                    <div>
-                      <label style={{ fontSize: 11, color: '#6b7280', display: 'block', marginBottom: 6 }}>Status</label>
-                      <select
-                        value={app.status}
-                        onChange={(e) => updateStatus(app.id, e.target.value)}
-                        style={{ background: '#111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '7px 12px', fontSize: 12, color: 'white', outline: 'none', cursor: 'pointer' }}
-                      >
-                        {Object.entries(statusConfig).map(([v, { label }]) => (
-                          <option key={v} value={v}>{label}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label style={{ fontSize: 11, color: '#6b7280', display: 'block', marginBottom: 6 }}>Reminder</label>
-                      <button
-                        onClick={() => toggleRemind(app.id, app.remind_me)}
-                        style={{ padding: '7px 14px', borderRadius: 8, border: 'none', background: app.remind_me ? 'rgba(59,130,246,0.2)' : 'rgba(255,255,255,0.06)', color: app.remind_me ? '#60a5fa' : '#9ca3af', cursor: 'pointer', fontSize: 12, fontWeight: 500 }}
-                      >
-                        {app.remind_me ? '🔔 On' : 'Enable'}
-                      </button>
-                    </div>
-                    {app.job?.apply_url && (
-                      <div style={{ marginLeft: 'auto' }}>
-                        <label style={{ fontSize: 11, color: '#6b7280', display: 'block', marginBottom: 6 }}>Apply</label>
-                        <a
-                          href={app.job.apply_url}
-                          target="_blank" rel="noopener noreferrer"
-                          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', color: '#9ca3af', textDecoration: 'none', fontSize: 12 }}
-                        >
-                          Apply <ExternalLink size={12} />
-                        </a>
-                      </div>
-                    )}
+          : filtered.map((app) => {
+            // Support both joined fields and nested job object
+            const title = app.job_title || app.job?.title || 'Job'
+            const company = app.job_company || app.job?.company || ''
+            const applyUrl = app.job_apply_url || app.job?.apply_url
+            return (
+              <div key={app.id} className="glass-card" style={{ overflow: 'hidden' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', cursor: 'pointer' }}
+                  onClick={() => setExpandedId(expandedId === app.id ? null : app.id)}>
+                  <div style={{ width: 38, height: 38, background: 'rgba(59,130,246,0.12)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#60a5fa', flexShrink: 0 }}>
+                    {company.slice(0, 2).toUpperCase() || 'JB'}
                   </div>
-                  <label style={{ fontSize: 11, color: '#6b7280', display: 'block', marginBottom: 6 }}>Notes</label>
-                  <textarea
-                    rows={3}
-                    defaultValue={app.notes || ''}
-                    placeholder="Add notes..."
-                    style={inp}
-                    onBlur={(e) => applicationsApi.update(app.id, { notes: e.target.value }).catch(() => {})}
-                  />
-                </motion.div>
-              )}
-            </motion.div>
-          ))
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: 'white', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</p>
+                    <p style={{ fontSize: 11, color: '#6b7280' }}>{company}</p>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                    <Badge variant={statusConfig[app.status]?.color || 'default'}>{statusConfig[app.status]?.label || app.status}</Badge>
+                    {app.remind_me && <Bell size={13} color="#fbbf24" />}
+                    <ChevronDown size={14} color="#6b7280" style={{ transform: expandedId === app.id ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                  </div>
+                </div>
+
+                {expandedId === app.id && (
+                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', padding: '14px 16px' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 14 }}>
+                      <div>
+                        <label style={{ fontSize: 11, color: '#6b7280', display: 'block', marginBottom: 5 }}>Status</label>
+                        <select value={app.status} onChange={(e) => updateStatus(app.id, e.target.value)}
+                          style={{ background: '#111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 7, padding: '7px 10px', fontSize: 12, color: 'white', outline: 'none', cursor: 'pointer' }}>
+                          {Object.entries(statusConfig).map(([v, { label }]) => (
+                            <option key={v} value={v}>{label}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 11, color: '#6b7280', display: 'block', marginBottom: 5 }}>Email Reminder</label>
+                        <button onClick={() => toggleRemind(app.id, app.remind_me)}
+                          style={{ padding: '7px 12px', borderRadius: 7, border: 'none', background: app.remind_me ? 'rgba(59,130,246,0.2)' : 'rgba(255,255,255,0.06)', color: app.remind_me ? '#60a5fa' : '#9ca3af', cursor: 'pointer', fontSize: 12 }}>
+                          {app.remind_me ? '🔔 On' : 'Enable'}
+                        </button>
+                      </div>
+                      {applyUrl && (
+                        <div style={{ marginLeft: 'auto' }}>
+                          <label style={{ fontSize: 11, color: '#6b7280', display: 'block', marginBottom: 5 }}>Apply</label>
+                          <a href={applyUrl} target="_blank" rel="noopener noreferrer"
+                            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 12px', borderRadius: 7, border: '1px solid rgba(255,255,255,0.1)', color: '#9ca3af', textDecoration: 'none', fontSize: 12 }}>
+                            Apply <ExternalLink size={11} />
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                    <label style={{ fontSize: 11, color: '#6b7280', display: 'block', marginBottom: 5 }}>Notes</label>
+                    <textarea rows={3} defaultValue={app.notes || ''} placeholder="Add notes..."
+                      style={inp}
+                      onBlur={(e) => applicationsApi.update(app.id, { notes: e.target.value }).catch(() => {})} />
+                  </div>
+                )}
+              </div>
+            )
+          })
         }
       </div>
 
       {!loading && filtered.length === 0 && (
-        <div className="glass-card" style={{ padding: 60, textAlign: 'center' }}>
-          <ClipboardList size={30} color="#374151" style={{ margin: '0 auto 12px' }} />
+        <div className="glass-card" style={{ padding: 50, textAlign: 'center' }}>
+          <ClipboardList size={28} color="#374151" style={{ margin: '0 auto 10px' }} />
           <p style={{ color: '#6b7280' }}>
-            {activeTab === 'all' ? 'No applications yet. Start tracking jobs!' : `No ${statusConfig[activeTab]?.label} applications.`}
+            {activeTab === 'all' ? 'No applications yet. Save jobs to start tracking!' : `No ${statusConfig[activeTab]?.label} applications.`}
           </p>
         </div>
       )}

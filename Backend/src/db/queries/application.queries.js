@@ -2,7 +2,16 @@ const db = require('../../config/db');
 
 const getApplicationsByUser = (user_id) =>
   db.query(
-    `SELECT a.*, j.title, j.company, j.role, j.job_type, j.location, j.deadline, j.apply_url
+    `SELECT
+       a.*,
+       j.title     AS job_title,
+       j.company   AS job_company,
+       j.role      AS job_role,
+       j.job_type  AS job_type,
+       j.location  AS job_location,
+       j.deadline  AS job_deadline,
+       j.apply_url AS job_apply_url,
+       j.domain    AS job_domain
      FROM applications a
      JOIN jobs j ON j.id = a.job_id
      WHERE a.user_id = $1
@@ -16,8 +25,8 @@ const createApplication = (user_id, fields) => {
     `INSERT INTO applications (user_id, job_id, status, referral_name, referral_link, reminder_date, notes)
      VALUES ($1, $2, $3, $4, $5, $6, $7)
      RETURNING *`,
-    [user_id, job_id, status, referral_name, referral_link,
-     reminder_date ? new Date(reminder_date) : null, notes]
+    [user_id, job_id, status, referral_name || null, referral_link || null,
+     reminder_date ? new Date(reminder_date) : null, notes || null]
   );
 };
 
@@ -33,9 +42,9 @@ const updateApplication = (id, user_id, fields) => {
        updated_at    = NOW()
      WHERE id = $6 AND user_id = $7
      RETURNING *`,
-    [status, referral_name, referral_link,
+    [status || null, referral_name || null, referral_link || null,
      reminder_date ? new Date(reminder_date) : null,
-     notes, id, user_id]
+     notes || null, id, user_id]
   );
 };
 

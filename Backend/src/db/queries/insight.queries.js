@@ -12,31 +12,24 @@ const getApplicationStats = (userId) =>
 
 const getTopDomains = (userId) =>
   db.query(
-    `SELECT j.domain, COUNT(*) as job_count
-     FROM jobs j
-     JOIN profiles p ON p.user_id = $1
-     WHERE
-       (p.branch IS NULL OR p.branch = ANY(j.branch_hint) OR j.branch_hint = '{}')
-       AND (j.deadline IS NULL OR j.deadline > NOW())
-     GROUP BY j.domain
-     ORDER BY job_count DESC
+    `SELECT domain, COUNT(*) as count
+     FROM jobs
+     WHERE domain IS NOT NULL AND (deadline IS NULL OR deadline > NOW())
+     GROUP BY domain
+     ORDER BY count DESC
      LIMIT 8`,
-    [userId]
+    []  // no userId needed
   );
 
-const getTopSkillsInMarket = (userId) =>
+const getTopSkillsInMarket = () =>
   db.query(
-    `SELECT skill, COUNT(*) as demand_count
-     FROM jobs j
-     JOIN profiles p ON p.user_id = $1
-     JOIN LATERAL unnest(j.skills_hint) AS skill ON true
-     WHERE
-       (p.branch IS NULL OR p.branch = ANY(j.branch_hint) OR j.branch_hint = '{}')
-       AND (j.deadline IS NULL OR j.deadline > NOW())
+    `SELECT skill, COUNT(*) as count
+     FROM jobs
+     JOIN LATERAL unnest(skills_hint) AS skill ON true
+     WHERE deadline IS NULL OR deadline > NOW()
      GROUP BY skill
-     ORDER BY demand_count DESC
-     LIMIT 10`,
-    [userId]
+     ORDER BY count DESC
+     LIMIT 10`
   );
 
 const getSkillGap = (userId) =>
@@ -52,31 +45,23 @@ const getSkillGap = (userId) =>
          ) THEN true
          ELSE false
        END AS student_has_skill
-     FROM jobs j
-     JOIN profiles p ON p.user_id = $1
-     JOIN LATERAL unnest(j.skills_hint) AS skill ON true
-     WHERE
-       (p.branch IS NULL OR p.branch = ANY(j.branch_hint) OR j.branch_hint = '{}')
-       AND (j.deadline IS NULL OR j.deadline > NOW())
+     FROM jobs
+     JOIN LATERAL unnest(skills_hint) AS skill ON true
+     WHERE deadline IS NULL OR deadline > NOW()
      GROUP BY skill
      ORDER BY demand_count DESC
      LIMIT 15`,
     [userId]
   );
 
-const getTopCompanies = (userId) =>
+const getTopCompanies = () =>
   db.query(
-    `SELECT j.company, COUNT(*) as open_roles,
-            MAX(j.posted_at) as latest_posting
-     FROM jobs j
-     JOIN profiles p ON p.user_id = $1
-     WHERE
-       (p.branch IS NULL OR p.branch = ANY(j.branch_hint) OR j.branch_hint = '{}')
-       AND (j.deadline IS NULL OR j.deadline > NOW())
-     GROUP BY j.company
-     ORDER BY open_roles DESC
-     LIMIT 10`,
-    [userId]
+    `SELECT company, COUNT(*) as count
+     FROM jobs
+     WHERE deadline IS NULL OR deadline > NOW()
+     GROUP BY company
+     ORDER BY count DESC
+     LIMIT 10`
   );
 
 const getExpiringSoon = (userId) =>
@@ -89,10 +74,7 @@ const getExpiringSoon = (userId) =>
        j.deadline IS NOT NULL
        AND j.deadline > NOW()
        AND j.deadline <= NOW() + INTERVAL '7 days'
-       AND j.source != 'manual'
-       AND j.id NOT IN (
-         SELECT job_id FROM applications WHERE user_id = $1
-       )
+       AND j.id NOT IN (SELECT job_id FROM applications WHERE user_id = $1)
      ORDER BY j.deadline ASC
      LIMIT 5`,
     [userId]
@@ -100,18 +82,12 @@ const getExpiringSoon = (userId) =>
 
 const getProfileCompleteness = (userId) =>
   db.query(
-    `SELECT first_name, last_name, branch, year,
-            location, skills, resume_url, about
+    `SELECT first_name, last_name, branch, year, location, skills, resume_url, about
      FROM profiles WHERE user_id = $1`,
     [userId]
   );
 
 module.exports = {
-  getApplicationStats,
-  getTopDomains,
-  getTopSkillsInMarket,
-  getSkillGap,
-  getTopCompanies,
-  getExpiringSoon,
-  getProfileCompleteness,
+  getApplicationStats, getTopDomains, getTopSkillsInMarket,
+  getSkillGap, getTopCompanies, getExpiringSoon, getProfileCompleteness,
 };

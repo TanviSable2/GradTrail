@@ -6,7 +6,7 @@ const upsertJobs = async (source, jobs) => {
     return;
   }
 
-  const client = await db.getClient();
+  const client = await db.connect();  // ← fixed: was db.getClient()
   let inserted = 0;
   let updated = 0;
 

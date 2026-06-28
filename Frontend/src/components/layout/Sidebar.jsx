@@ -2,8 +2,8 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Briefcase, GraduationCap, BookOpen,
-  ClipboardList, Bell, BarChart2, User, Building2,
-  ChevronLeft, Zap, LogOut, X,
+  ClipboardList, Bell, BarChart2, User,
+  ChevronLeft, LogOut, X,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 
@@ -15,9 +15,20 @@ const navItems = [
   { path: '/applications', icon: ClipboardList, label: 'Applications' },
   { path: '/reminders', icon: Bell, label: 'Reminders' },
   { path: '/insights', icon: BarChart2, label: 'Insights' },
-  { path: '/companies', icon: Building2, label: 'Companies' },
   { path: '/profile', icon: User, label: 'Profile' },
 ]
+
+// Custom SVG logo — graduation cap with a trail line, matches brand colors
+function GradTrailLogo({ size = 28 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+      <polygon points="16,5 30,12 16,19 2,12" fill="#3b82f6" />
+      <path d="M24 15.5 L24 22 Q16 26 8 22 L8 15.5" stroke="#60a5fa" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <circle cx="30" cy="12" r="1.4" fill="#fbbf24" />
+      <line x1="30" y1="13.4" x2="30" y2="19" stroke="#fbbf24" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  )
+}
 
 const S = {
   aside: {
@@ -33,18 +44,10 @@ const S = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '16px 16px 12px',
+    padding: '18px 16px 14px',
     borderBottom: '1px solid rgba(255,255,255,0.06)',
     marginBottom: 8,
   },
-  logoIcon: {
-    width: 36, height: 36,
-    background: '#3b82f6',
-    borderRadius: 10,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    flexShrink: 0,
-  },
-  logoText: { fontSize: 17, fontWeight: 700, color: 'white', marginLeft: 10 },
   toggleBtn: {
     background: 'transparent', border: 'none',
     color: '#6b7280', cursor: 'pointer',
@@ -58,12 +61,12 @@ const S = {
     gap: collapsed ? 0 : 10,
     justifyContent: collapsed ? 'center' : 'flex-start',
     padding: collapsed ? '10px 0' : '9px 12px',
-    borderRadius: 12,
+    borderRadius: 10,
     textDecoration: 'none',
     fontSize: 13,
     fontWeight: 500,
     color: active ? '#60a5fa' : '#6b7280',
-    background: active ? 'rgba(59,130,246,0.12)' : 'transparent',
+    background: active ? 'rgba(59,130,246,0.1)' : 'transparent',
     marginBottom: 2,
     transition: 'all 0.15s',
   }),
@@ -80,8 +83,8 @@ const S = {
     marginBottom: 4,
   }),
   avatar: {
-    width: 32, height: 32,
-    background: 'rgba(59,130,246,0.2)',
+    width: 30, height: 30,
+    background: 'rgba(59,130,246,0.15)',
     borderRadius: 8,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     fontSize: 12, fontWeight: 600, color: '#60a5fa', flexShrink: 0,
@@ -90,9 +93,8 @@ const S = {
     display: 'flex', alignItems: 'center', gap: 10,
     width: '100%', background: 'transparent', border: 'none',
     color: '#ef4444', cursor: 'pointer',
-    padding: '9px 12px', borderRadius: 12,
+    padding: '9px 12px', borderRadius: 10,
     fontSize: 13, fontWeight: 500,
-    transition: 'background 0.15s',
   },
 }
 
@@ -103,12 +105,12 @@ function SidebarContent({ collapsed, onToggle, onMobileClose, isMobile }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       <div style={S.logoRow}>
-        <div style={{ display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
-          <div style={S.logoIcon}><Zap size={16} color="white" /></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 9, overflow: 'hidden' }}>
+          <GradTrailLogo size={26} />
           <AnimatePresence>
             {!collapsed && (
               <motion.span
-                style={S.logoText}
+                style={{ fontSize: 16, fontWeight: 700, color: 'white', whiteSpace: 'nowrap' }}
                 initial={{ opacity: 0, width: 0 }}
                 animate={{ opacity: 1, width: 'auto' }}
                 exit={{ opacity: 0, width: 0 }}
@@ -138,7 +140,7 @@ function SidebarContent({ collapsed, onToggle, onMobileClose, isMobile }) {
             onClick={onMobileClose}
             style={({ isActive }) => S.link(isActive, collapsed)}
           >
-            <Icon size={17} style={{ flexShrink: 0 }} />
+            <Icon size={16} style={{ flexShrink: 0 }} />
             <AnimatePresence>
               {!collapsed && (
                 <motion.span
@@ -176,10 +178,8 @@ function SidebarContent({ collapsed, onToggle, onMobileClose, isMobile }) {
         <button
           style={{ ...S.logoutBtn, justifyContent: collapsed ? 'center' : 'flex-start', padding: collapsed ? '10px 0' : '9px 12px' }}
           onClick={() => { logout(); navigate('/') }}
-          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
-          onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
         >
-          <LogOut size={16} />
+          <LogOut size={15} />
           <AnimatePresence>
             {!collapsed && (
               <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -196,28 +196,26 @@ function SidebarContent({ collapsed, onToggle, onMobileClose, isMobile }) {
 export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
   return (
     <>
-      {/* Desktop */}
       <motion.aside
         style={S.aside}
-        animate={{ width: collapsed ? 72 : 240 }}
-        transition={{ duration: 0.28, ease: 'easeInOut' }}
+        animate={{ width: collapsed ? 60 : 220 }}
+        transition={{ duration: 0.25, ease: 'easeInOut' }}
         className="hidden-mobile"
       >
         <SidebarContent collapsed={collapsed} onToggle={onToggle} onMobileClose={() => {}} isMobile={false} />
       </motion.aside>
 
-      {/* Mobile overlay */}
       <AnimatePresence>
         {mobileOpen && (
           <>
             <motion.div
-              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 40, backdropFilter: 'blur(4px)' }}
+              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 40 }}
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={onMobileClose}
             />
             <motion.aside
-              style={{ ...S.aside, position: 'fixed', left: 0, top: 0, width: 240, zIndex: 50 }}
-              initial={{ x: -260 }} animate={{ x: 0 }} exit={{ x: -260 }}
+              style={{ ...S.aside, position: 'fixed', left: 0, top: 0, width: 220, zIndex: 50 }}
+              initial={{ x: -240 }} animate={{ x: 0 }} exit={{ x: -240 }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
             >
               <SidebarContent collapsed={false} onToggle={() => {}} onMobileClose={onMobileClose} isMobile={true} />

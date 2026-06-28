@@ -37,8 +37,11 @@ const syncRemoteOK = async () => {
 
   try {
     const response = await fetch('https://remoteok.com/api', {
-      headers: { 'User-Agent': 'NextStep Job Aggregator (student project)' },
-    });
+  headers: {
+    'User-Agent': 'Mozilla/5.0 (compatible; GradTrail/1.0; student project job aggregator)',
+    'Accept': 'application/json',
+  },
+});
 
     if (!response.ok) {
       console.error('[sync:remoteok] HTTP error:', response.status);

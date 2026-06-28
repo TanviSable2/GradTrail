@@ -2,7 +2,11 @@ const { getJobs, getJobById: queryGetJobById, createJob, getDistinctDomains } = 
 
 const listJobs = async (filters) => {
   const result = await getJobs(filters);
-  return { count: result.rowCount, jobs: result.rows };
+  const total = result.rows.length ? Number(result.rows[0].total_count) : 0;
+  return {
+    count: total,
+    jobs: result.rows,
+  };
 };
 
 const getJobById = async (id) => {
