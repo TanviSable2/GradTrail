@@ -9,18 +9,19 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS profiles (
-    id          SERIAL PRIMARY KEY,
-    user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    first_name  TEXT,
-    last_name   TEXT,
-    branch      TEXT NOT NULL,
-    year        INTEGER,
-    location    TEXT,
-    skills      TEXT[],
-    resume_url  TEXT,
-    about       TEXT,
-    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    id              SERIAL PRIMARY KEY,
+    user_id         INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    first_name      TEXT,
+    last_name       TEXT,
+    branch          TEXT NOT NULL,
+    year            INTEGER,
+    location        TEXT,
+    skills          TEXT[],
+    resume_url      TEXT,
+    resume_filename TEXT,
+    about           TEXT,
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (user_id)
 );
 
@@ -36,6 +37,7 @@ CREATE TABLE IF NOT EXISTS jobs (
     description     TEXT,
     branch_hint     TEXT[],
     skills_hint     TEXT[],
+    domain          TEXT,
     location        TEXT,
     is_remote       BOOLEAN DEFAULT FALSE,
     country         TEXT DEFAULT 'India',
@@ -51,17 +53,22 @@ CREATE TABLE IF NOT EXISTS jobs (
 );
 
 CREATE TABLE IF NOT EXISTS applications (
-    id             SERIAL PRIMARY KEY,
-    user_id        INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    job_id         INTEGER NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
-    status         TEXT NOT NULL DEFAULT 'not_applied'
-                   CHECK (status IN ('not_applied','applied','interview','rejected','offer')),
-    referral_name  TEXT,
-    referral_link  TEXT,
-    reminder_date  TIMESTAMP,
-    notes          TEXT,
-    created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    id                      SERIAL PRIMARY KEY,
+    user_id                 INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    job_id                  INTEGER NOT NULL REFERENCES jobs(id) ON DELETE CASCADE,
+    status                  TEXT NOT NULL DEFAULT 'not_applied'
+                            CHECK (status IN ('not_applied','applied','interview','rejected','offer')),
+    referral_name           TEXT,
+    referral_link           TEXT,
+    reminder_date           TIMESTAMP,
+    notes                   TEXT,
+    remind_me               BOOLEAN DEFAULT FALSE,
+    remind_days_before      INTEGER DEFAULT 3,
+    deadline_reminder_sent  BOOLEAN DEFAULT FALSE,
+    interview_reminder_sent BOOLEAN DEFAULT FALSE,
+    interview_date          TIMESTAMP WITH TIME ZONE,
+    created_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (user_id, job_id)
 );
 
@@ -77,6 +84,13 @@ CREATE TABLE IF NOT EXISTS certifications (
     updated_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS sync_log (
+    id           SERIAL PRIMARY KEY,
+    source       TEXT NOT NULL UNIQUE,
+    last_synced  TIMESTAMP,
+    total_jobs   INTEGER DEFAULT 0
+);
+
 CREATE INDEX IF NOT EXISTS idx_profiles_branch      ON profiles(branch);
 CREATE INDEX IF NOT EXISTS idx_profiles_skills      ON profiles USING GIN (skills);
 CREATE INDEX IF NOT EXISTS idx_jobs_job_type        ON jobs(job_type);
@@ -87,6 +101,8 @@ CREATE INDEX IF NOT EXISTS idx_jobs_skills_hint     ON jobs USING GIN (skills_hi
 CREATE INDEX IF NOT EXISTS idx_jobs_is_remote       ON jobs(is_remote);
 CREATE INDEX IF NOT EXISTS idx_jobs_posted_at       ON jobs(posted_at);
 CREATE INDEX IF NOT EXISTS idx_jobs_employment_type ON jobs(employment_type);
+CREATE INDEX IF NOT EXISTS idx_jobs_domain          ON jobs(domain);
+CREATE INDEX IF NOT EXISTS idx_jobs_company_name    ON jobs(company);
 CREATE INDEX IF NOT EXISTS idx_apps_user_id         ON applications(user_id);
 CREATE INDEX IF NOT EXISTS idx_apps_status          ON applications(status);
 CREATE INDEX IF NOT EXISTS idx_apps_reminder        ON applications(reminder_date);
