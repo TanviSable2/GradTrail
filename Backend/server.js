@@ -13,7 +13,7 @@ const { runAllSyncs, runCoursesSeed, getSyncStatus } = require('./src/services/s
 const { runAllReminders } = require('./src/services/reminder.service'); // ← removed runCourseReminders, it doesn't exist
 
 const app = express();
-
+app.set('trust proxy', 1);
 app.use(cors());
 app.use(express.json());
 app.use('/api', generalLimiter);
