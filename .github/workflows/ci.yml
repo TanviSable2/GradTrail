@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD
 
 on:
   push:
@@ -36,3 +36,30 @@ jobs:
         run: npm run build
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
+
+  deploy-backend:
+    name: Deploy Backend to Render
+    runs-on: ubuntu-latest
+    needs: [backend-check, frontend-build]  # only runs if BOTH above jobs pass
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'  # skip on PRs
+    steps:
+      - name: Trigger Render deploy
+        run: |
+          curl -s -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}" \
+            -H "Content-Type: application/json" \
+            --fail
+        # --fail makes curl return non-zero exit code if Render returns an error response
+
+      - name: Wait for Render to deploy
+        run: sleep 90
+        # Render typically takes 60-90 seconds to pull, build, and restart
+
+      - name: Verify backend health
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://gradtrail.onrender.com/health)
+          echo "Health check returned HTTP $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "Health check FAILED — backend may not have deployed correctly"
+            exit 1
+          fi
+          echo "Health check PASSED — backend is live and responding"
